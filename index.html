@@ -45,7 +45,7 @@ window.addEventListener("message",function(e){var d=e.data||{};
  if(d.block){if(blocked.indexOf(d.block)<0)blocked.push(d.block);LS.set("rs_blocked",JSON.stringify(blocked));return}
  if(d.unblock){blocked=blocked.filter(function(x){return x!==d.unblock});LS.set("rs_blocked",JSON.stringify(blocked));show(cur,curO);return}
  if(d.delacct){try{localStorage.removeItem(avKey())}catch(e){}fbUid="";if(window.RSFB){RSFB.signOut();rsToast(rsMsg("delNote"))}auth=false;chats={};trips=[];acct={name:"",bio:"",langs:[],gender:"",setup:false};reports=[];blocked=[];avatar="";["rs_acct","rs_reports","rs_blocked","rs_avatar"].forEach(function(k){try{localStorage.removeItem(k)}catch(e){}});hist=[];show("home");return}
- if(d.setupDone){if(!window.RSFB){rsToast(rsMsg("saveErr"));return}RSFB.saveNow(acct).then(function(){var sp=setupAfter;setupAfter=null;if(sp)show(sp[0],sp[1]);else go("back")},function(e){console.error(e);acct.setup=false;LS.set("rs_acct",JSON.stringify(acct));rsToast(rsMsg("saveErr"))});return}
+ if(d.setupDone){if(!window.RSFB){rsToast(rsMsg("saveErr"));return}RSFB.saveNow(acct).then(function(){var sp=setupAfter;setupAfter=null;if(sp)show(sp[0],sp[1]);else go("back")},function(e){console.error(e);acct.setup=false;LS.set("rs_acct",JSON.stringify(acct));rsToast(rsMsg("saveErr")+" ["+((e&&(e.code||e.message))||"?")+"]",9000)});return}
  if(d.avatar!==undefined){avatar=d.avatar;LS.set(avKey(),avatar);show(cur,curO);return}
  if(d.lang){lang=d.lang;LS.set("rs_lang",lang);if(d.go!=="next"){show(cur,curO);return}}
  if(d.go==="next"){go(acked?"home":"notice");return}
@@ -61,12 +61,12 @@ saveErr:{en:"Couldn't save your profile. Please try again.","zh-TW":"個人資�
 loadErr:{en:"Couldn't load your profile.","zh-TW":"無法載入個人資料。","zh-CN":"无法载入个人资料。",ja:"プロフィールを読み込めませんでした。",ko:"프로필을 불러오지 못했어요."},
 delNote:{en:"Test version: your cloud profile is not deleted yet.","zh-TW":"測試版：雲端個人資料尚未刪除。","zh-CN":"测试版：云端个人资料尚未删除。",ja:"テスト版：クラウド上のプロフィールはまだ削除されません。",ko:"테스트 버전: 클라우드 프로필은 아직 삭제되지 않아요."}};
 function rsMsg(k){var m=RSMSG[k];return m?(m[lang]||m.en):k}
-function rsToast(m){var el=document.getElementById("toast");el.textContent=m;el.className="on";clearTimeout(window.__rsT);window.__rsT=setTimeout(function(){el.className=""},4000);el.onclick=function(){el.className=""}}
+function rsToast(m,ms){var el=document.getElementById("toast");el.textContent=m;el.className="on";clearTimeout(window.__rsT);window.__rsT=setTimeout(function(){el.className=""},ms||4000);el.onclick=function(){el.className=""}}
 function avKey(){return "rs_avatar"+(fbUid?"_"+fbUid:"")}
 function rsAuth(u,p){
   if(!u||u.isAnonymous){if(auth){auth=false;fbUid=""}return}
   fbUid=u.uid;auth=true;
-  if(p===undefined){rsToast(rsMsg("loadErr"));p=null}
+  if(p===undefined){rsToast(rsMsg("loadErr")+" ["+(window.__rsLoadErr||"?")+"]",9000);p=null}
   if(p)acct={name:p.name||"",bio:p.bio||"",langs:p.langs||[],gender:p.gender||"",setup:!!p.setupDone};
   else acct.setup=false;
   LS.set("rs_acct",JSON.stringify(acct));avatar=LS.get(avKey())||"";
@@ -83,11 +83,11 @@ var FIXED_URL="https://tonytangtwnz-max.github.io/routesplit-test/",MAILKEY="rs_
 var app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
 function fail(k,e){var x=new Error(k);x.rsKey=k;x.cause=e;return x}
 function msg(k){return window.rsMsg?window.rsMsg(k):k}
-function say(k){if(window.rsToast)window.rsToast(msg(k))}
+function say(k,x){if(window.rsToast)window.rsToast(msg(k)+(x?" ["+x+"]":""),9000)}
 function setLang(){var m={"zh-TW":"zh-TW","zh-CN":"zh-CN","ja":"ja","ko":"ko"};auth.languageCode=m[window.lang]||"en"}
 function prov(u){var id=(u.providerData&&u.providerData[0]&&u.providerData[0].providerId)||"";return id==="google.com"?"google":"email"}
 function pick(a){a=a||{};return {name:String(a.name||"").slice(0,20),bio:String(a.bio||"").slice(0,60),langs:Array.isArray(a.langs)?a.langs.slice(0,20):[],gender:a.gender||"",setupDone:!!a.setup}}
-async function loadProfile(u){try{var s=await getDoc(doc(db,"users",u.uid));return s.exists()?s.data():null}catch(e){console.error(e);return undefined}}
+async function loadProfile(u){try{var s=await getDoc(doc(db,"users",u.uid));return s.exists()?s.data():null}catch(e){console.error(e);window.__rsLoadErr=e&&e.code;return undefined}}
 var gen=0;
 function listen(){onAuthStateChanged(auth,async function(u){
   var g=++gen;
@@ -122,6 +122,6 @@ window.RSFB={
     return sendSignInLinkToEmail(auth,email,{url:url,handleCodeInApp:true}).then(function(){try{localStorage.setItem(MAILKEY,email)}catch(e){}},function(e){throw fail("mailErr",e)})},
   signOut:function(){return signOut(auth)},
   saveNow:saveNow,
-  saveSoon:function(a){clearTimeout(timer);timer=setTimeout(function(){saveNow(a).catch(function(e){console.error(e);say("saveErr")})},800)}
+  saveSoon:function(a){clearTimeout(timer);timer=setTimeout(function(){saveNow(a).catch(function(e){console.error(e);say("saveErr",e&&(e.code||e.message))})},800)}
 };
 </script></body></html>
