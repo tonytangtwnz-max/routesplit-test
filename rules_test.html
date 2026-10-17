@@ -1,0 +1,52 @@
+<!doctype html><html lang="zh-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>RouteSplit 規則驗證</title>
+<style>body{font:16px/1.5 -apple-system,sans-serif;margin:0;padding:16px;background:#fff;color:#201812}h1{font-size:20px}button{font:700 17px sans-serif;padding:14px 18px;border:3px solid #201812;border-radius:8px;background:#F5C84B;width:100%}#who{background:#f3ebd8;padding:10px;border-radius:6px;margin:10px 0;font-size:14px}.r{padding:8px 0;border-bottom:1px solid #ddd;font-size:15px}.ok{color:#1b6e2e}.bad{color:#c0262d;font-weight:700}.w{color:#a86a00}small{color:#666;display:block}</style></head><body>
+<h1>RouteSplit 安全規則驗證</h1>
+<div id="who">載入中…</div>
+<button id="go" disabled>開始測試</button>
+<div id="out"></div>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInAnonymously} from "https://www.gstatic.com/firebasejs/13.0.0/firebase-auth.js";
+import {getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,getDocs,collection,limit,query} from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+var cfg={apiKey:"AIzaSyBhF70nxAHh3SXMTZtGI4NqWOhMkHOrZ-U",authDomain:"routesplit-test.firebaseapp.com",projectId:"routesplit-test",storageBucket:"routesplit-test.firebasestorage.app",messagingSenderId:"273368587219",appId:"1:273368587219:web:cbaae683ca524e58216d26"};
+var app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app),me=null;
+var who=document.getElementById("who"),go=document.getElementById("go"),out=document.getElementById("out");
+onAuthStateChanged(auth,function(u){me=u;
+  if(!u||u.isAnonymous){who.textContent="目前不是真帳號登入。請先回主網站用 Google 登入，再回到這頁。";go.disabled=true}
+  else{who.textContent="已登入：uid "+u.uid.slice(0,8)+"…　"+(u.email||"");go.disabled=false}});
+function row(cls,t,s){var d=document.createElement("div");d.className="r "+cls;d.innerHTML=t+(s?"<small>"+s+"</small>":"");out.appendChild(d)}
+async function t(label,shouldPass,fn){
+  var pass=false,code="";
+  try{await fn();pass=true}catch(e){code=e.code||e.message}
+  if(pass===shouldPass)row("ok","✅ "+label,shouldPass?"成功（預期）":"被拒絕（預期）："+code);
+  else if(!pass&&shouldPass)row("bad","❌ "+label,"預期成功，卻失敗："+code);
+  else row("bad","❌ "+label,"預期被拒絕，卻成功了！規則有漏洞");
+  if(!pass&&!shouldPass&&code!=="permission-denied"&&code.indexOf("permission-denied")<0)row("w","⚠️ 上一項失敗原因不是 permission-denied：",code)}
+go.onclick=async function(){
+  go.disabled=true;out.innerHTML="";var uid=me.uid,mine=doc(db,"users",uid),other=null;
+  try{var s=await getDocs(query(collection(db,"users"),limit(10)));s.forEach(function(d){if(d.id!==uid&&!other)other=d.id})}catch(e){row("bad","❌ 讀取 users 失敗",e.code)}
+  var orig="";try{orig=(await getDoc(mine)).data().bio||""}catch(e){}
+  await t("讀自己的 users",true,function(){return getDoc(mine)});
+  if(other)await t("讀別人的 users（公開資料，允許）",true,function(){return getDoc(doc(db,"users",other))});
+  await t("改自己的 bio",true,function(){return updateDoc(mine,{bio:"rules-test"})});
+  await t("把自己的 bio 改回原值",true,function(){return updateDoc(mine,{bio:orig})});
+  if(other)await t("改別人的 bio",false,function(){return updateDoc(doc(db,"users",other),{bio:"hacked"})});
+  await t("自己把 verified 改成 true",false,function(){return updateDoc(mine,{verified:true})});
+  await t("自己把 up 改成 99",false,function(){return updateDoc(mine,{up:99})});
+  await t("自己把 suspended 改成 true",false,function(){return updateDoc(mine,{suspended:true})});
+  await t("刪除自己的 users",false,function(){return deleteDoc(mine)});
+  await t("讀自己的 users_private",true,function(){return getDoc(doc(db,"users_private",uid))});
+  try{var p=await getDoc(doc(db,"users_private",uid));row(p.exists()?"ok":"bad",(p.exists()?"ℹ️ users_private 有資料：":"ℹ️ users_private 沒有這份文件"),p.exists()?JSON.stringify(p.data()):"")}catch(e){}
+  if(other)await t("讀別人的 users_private",false,function(){return getDoc(doc(db,"users_private",other))});
+  if(other)await t("用別人當 posterId 建立 trips",false,function(){return setDoc(doc(db,"trips","rt_"+Date.now()),{posterId:other,status:"open",rs:false,matchedMale:0,matchedFemale:0})});
+  // 匿名身分
+  try{
+    var a2=initializeApp(cfg,"anon"),au=getAuth(a2),adb=getFirestore(a2),cr=await signInAnonymously(au),au2=cr.user.uid;
+    row("","ℹ️ 匿名測試身分 uid "+au2.slice(0,8)+"…");
+    await t("匿名：讀 users（允許）",true,function(){return getDocs(query(collection(adb,"users"),limit(1)))});
+    await t("匿名：建立自己的 users",false,function(){return setDoc(doc(adb,"users",au2),{name:"anon",bio:"",langs:[],gender:"",setupDone:true,avatarPath:null,verified:false,up:0,down:0,reportStrikes:0,suspended:false})});
+    await t("匿名：建立 users_private",false,function(){return setDoc(doc(adb,"users_private",au2),{email:"x"})});
+    await t("匿名：建立 trips",false,function(){return setDoc(doc(adb,"trips","rt_"+Date.now()),{posterId:au2,status:"open",rs:false,matchedMale:0,matchedFemale:0})});
+  }catch(e){row("bad","❌ 匿名測試無法進行",e.code||e.message)}
+  row("","測試完成。把整個畫面截圖給 Claude。");go.disabled=false};
+</script></body></html>
