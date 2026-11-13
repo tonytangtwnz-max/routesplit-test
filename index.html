@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="rs-version" content="4.0.17 (347)"><title>Route Split v2 · Test build</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="rs-version" content="4.0.18 (348)"><title>Route Split v2 · Test build</title>
 <style>:root{--ink:#201812}html,body{margin:0;height:100%;background:#FF751F;overflow:hidden}
 #app{container-type:inline-size;position:relative;height:100%;max-width:520px;margin:0 auto;background:#FF751F}
 #st,iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -212,7 +212,7 @@ var app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
 /* ===== 第 3a-3：版本更新架構 =====
    APP_VERSION：給人看的版本字串；APP_BUILD：遞增整數（每次發佈 +1），用來和 config/app.minBuild 比較；
    SCHEMA：資料格式版本（users／trips 的 schemaVersion）。日後改欄位時 SCHEMA +1，並在 norm() 補上轉換。 */
-var APP_VERSION="4.0.17",APP_BUILD=347,SCHEMA=1,OLD=false,cfgT=0,cfgNew=0;
+var APP_VERSION="4.0.18",APP_BUILD=348,SCHEMA=1,OLD=false,cfgT=0,cfgNew=0;
 window.RS_VER={v:APP_VERSION,b:APP_BUILD,schema:SCHEMA};
 function stamp(){return {schemaVersion:SCHEMA,appBuild:APP_BUILD,appVersion:APP_VERSION}}
 function guard(){if(OLD)throw fail("oldVer")}
@@ -258,7 +258,7 @@ function saveNow(a){clearTimeout(timer);
     var ref=doc(db,"users",u.uid),s=await getDoc(ref),d=pick(a);
     if(s.exists()){try{await updateDoc(ref,Object.assign({},d,stamp()))}catch(e){if(e&&e.code==="permission-denied")await updateDoc(ref,d);else throw e}}
     else await setDoc(ref,Object.assign({avatarPath:null,verified:false,up:0,down:0,reportStrikes:0,suspended:false,createdAt:serverTimestamp()},d,stamp()));
-    await setDoc(doc(db,"users_private",u.uid),{email:u.email||"",provider:prov(u)},{merge:true});
+    upc[u.uid]=null;await setDoc(doc(db,"users_private",u.uid),{email:u.email||"",provider:prov(u)},{merge:true});
   });
   chain=p.catch(function(){});return p}
 function avOk(a){a=String(a||"");return a.length<=40000&&/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(a)?a:""}
