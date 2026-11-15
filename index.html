@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="rs-version" content="4.0.35 (365)"><title>Route Split v2 · Test build</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="rs-version" content="4.0.36 (366)"><title>Route Split v2 · Test build</title>
 <style>:root{--ink:#201812}html,body{margin:0;height:100%;background:#FF751F;overflow:hidden}
 #app{container-type:inline-size;position:relative;height:100%;max-width:520px;margin:0 auto;background:#FF751F}
 #st,iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -188,7 +188,7 @@ function cheer(){try{if(localStorage.getItem("rs_snd")==="0")return;var a=cheerM
 ["pointerdown","touchend"].forEach(function(ev){document.addEventListener(ev,function(){try{[sndMk(),cheerMk()].forEach(function(a){if(!a.__u){a.__u=1;a.muted=true;var p=a.play();if(p&&p.then)p.then(function(){a.pause();a.currentTime=0;a.muted=false}).catch(function(){a.__u=0;a.muted=false})}})}catch(e){}},{passive:true})});
 function ping(){beep()}
 function fbMsgSeen(k,l){try{localStorage.setItem("rs_m_"+k,String(l.length))}catch(e){}var c=chats[k];if(c){if(!c.seed)c.seed=c.msgs[0];c.msgs=[c.seed].concat(l);c.unread=0;badge()}}
-function fbMsgSweep(){if(document.hidden||!auth||!fbUid||!window.RSFB||!RSFB.msgLoad)return;var open=(cur==="chat"&&curO&&curO.p)?curO.p.id:"";Object.keys(chats).filter(function(k){var c=chats[k];return c.real&&c.tid&&!c.declined&&!c.left&&k!==open&&!blockU[c.puid||""]}).sort(function(a,b){return (chats[b].at||0)-(chats[a].at||0)}).slice(0,8).forEach(function(k){var c=chats[k],ru=c.ruid||k.split("|")[2];RSFB.msgLoad(c.tid,ru).then(function(l){var seen=0;try{seen=+localStorage.getItem("rs_m_"+k)||0}catch(e){}if(l.length<=seen)return;var nw=l.slice(seen).filter(function(m){return !m[1]});try{localStorage.setItem("rs_m_"+k,String(l.length))}catch(e){}if(!c.seed)c.seed=c.msgs[0];c.msgs=[c.seed].concat(l);if(!nw.length)return;c.unread=1;badge();ping();rsToast(c.peer.n+": "+nw[nw.length-1][0].slice(0,40),6000);var el=document.getElementById("toast");el.onclick=function(){el.className="";go("chat",{p:{id:k}})}},function(){})})}
+function fbMsgSweep(){if(document.hidden||!auth||!fbUid||!window.RSFB||!RSFB.msgLoad)return;var open=(cur==="chat"&&curO&&curO.p)?curO.p.id:"";Object.keys(chats).filter(function(k){var c=chats[k];return c.real&&c.tid&&!c.declined&&!c.left&&k!==open&&!blockU[c.puid||""]}).sort(function(a,b){return (chats[b].at||0)-(chats[a].at||0)}).slice(0,8).forEach(function(k){var c=chats[k],ru=c.ruid||k.split("|")[2];RSFB.msgLoad(c.tid,ru).then(function(l){var seen=0;try{seen=+localStorage.getItem("rs_m_"+k)||0}catch(e){}if(l.length<=seen)return;var nw=l.slice(seen).filter(function(m){return !m[1]});try{localStorage.setItem("rs_m_"+k,String(l.length))}catch(e){}if(!c.seed)c.seed=c.msgs[0];c.msgs=[c.seed].concat(l);if(!nw.length)return;c.unread=1;badge();rsToast(c.peer.n+": "+nw[nw.length-1][0].slice(0,40),6000);var el=document.getElementById("toast");el.onclick=function(){el.className="";go("chat",{p:{id:k}})}},function(){})})}
 setInterval(fbMsgSweep,15000);
 function fbPoll(){if(!document.hidden&&auth&&fbUid&&window.RSFB)fbLoadReqs(true)}
 setInterval(fbPoll,40000);
@@ -268,7 +268,7 @@ var app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
 /* ===== 第 3a-3：版本更新架構 =====
    APP_VERSION：給人看的版本字串；APP_BUILD：遞增整數（每次發佈 +1），用來和 config/app.minBuild 比較；
    SCHEMA：資料格式版本（users／trips 的 schemaVersion）。日後改欄位時 SCHEMA +1，並在 norm() 補上轉換。 */
-var APP_VERSION="4.0.35",APP_BUILD=365,SCHEMA=1,OLD=false,cfgT=0,cfgNew=0;
+var APP_VERSION="4.0.36",APP_BUILD=366,SCHEMA=1,OLD=false,cfgT=0,cfgNew=0;
 window.RS_VER={v:APP_VERSION,b:APP_BUILD,schema:SCHEMA};
 function stamp(){return {schemaVersion:SCHEMA,appBuild:APP_BUILD,appVersion:APP_VERSION}}
 function guard(){if(OLD)throw fail("oldVer")}
