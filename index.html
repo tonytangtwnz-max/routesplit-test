@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="rs-version" content="4.0.40 (370)"><title>Route Split v2 · Test build</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="rs-version" content="4.0.42 (372)"><title>Route Split v2 · Test build</title>
 <style>:root{--ink:#201812}html,body{margin:0;height:100%;background:#FF751F;overflow:hidden}
 #app{container-type:inline-size;position:relative;height:100%;max-width:520px;margin:0 auto;background:#FF751F}
 #st,iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -124,7 +124,7 @@ function fbSeekChat(t,st,m,f,drv){if(blockU[t.uid])return false;var key="ut|"+t.
   if(old){var ch=false;
     if(gone&&t.cx&&old.matched&&!old.left){old.matched=false;old.left=1;old.leftBy="host";old.unread=1;ch=true;rsToast(rsMsg("tripGone"),6000)}
     else if(gone&&!old.matched&&!old.declined&&!old.left){old.declined=true;old.unread=1;ch=true;rsToast(rsMsg("tripGone"),6000)}
-    else if(st==="offered"&&!old.invited&&!old.matched&&!old.declined){old.invited=true;old.unread=1;ch=true;rsToast("💌 對方已接受，請確認 / Accepted — please confirm",6000);if(t.ts>Date.now())ping()}
+    else if(st==="offered"&&!old.invited&&!old.matched&&!old.declined){old.invited=true;old.unread=1;ch=true;rsToast("💌 對方已接受，請確認 / Accepted — please confirm",6000)}
     else if(ac&&!old.matched&&!old.left){if(t.ts>Date.now()){old.pow=1;if(cur!=="chat")cheer()}old.matched=true;old.accepted=true;old.invited=true;old.trip=mkTrip(t,(t.mm|0)+(t.mf|0));old.unread=1;ch=true;rsToast(rsMsg("gotAcc"),6000)}
     else if(ac&&old.matched&&t.meetD&&old.trip&&old.trip.meetD!==t.meetD){old.trip.meetD=t.meetD;ch=true}
     else if(dc&&!old.declined){old.declined=true;old.unread=1;ch=true;rsToast(rsMsg("gotDec"),6000)}
@@ -173,7 +173,7 @@ function fbChatSync(k,tid,uid,done){var fin=function(any){if(done){done();return
   else{var t=trips.filter(function(x){return x.id===tid})[0];if(!t||!RSFB.requestsLoad){if(done)done();return}syncBusy=Date.now();
     RSFB.requestsLoad([tid]).then(function(l){syncBusy=0;var any=false;l.forEach(function(rq){if(rq.uid===uid&&fbReqChat(t,rq))any=true});fin(any)},function(e){syncBusy=0;console.error(e);fin(false)})}}
 var NEWQ=[];
-function fbReqToast(){if(!NEWQ.length)return;var q=NEWQ[0],n=NEWQ.length;NEWQ=[];ping();
+function fbReqToast(){if(!NEWQ.length)return;var q=NEWQ[0],n=NEWQ.length;NEWQ=[];
   rsToast((TN[TL[lang]]||TN.en).replace("{n}",q.n)+(n>1?" (+"+(n-1)+")":""),8000);
   var el=document.getElementById("toast");el.onclick=function(){el.className="";go("chat",{p:{id:q.k}})}}
 var APPEAL_MAIL="contact@routesplit.example",SUS_T={en:["Your account is suspended","We've restricted this account because it appears to break our Terms of Use. While suspended, you can't post, apply or message.","If you think this is a mistake, email us with your nickname and a short explanation:","Email us","Log out"],zh:["你的帳號已被停權","我們因帳號疑似違反使用條款，已限制此帳號。停權期間無法發布、申請或傳訊息。","若你認為是誤判，請來信並附上你的暱稱與簡短說明：","來信申訴","登出"],zhc:["你的账号已被停权","我们因账号疑似违反使用条款，已限制此账号。停权期间无法发布、申请或发消息。","若你认为是误判，请来信并附上你的昵称与简短说明：","来信申诉","退出登录"],ja:["アカウントが停止されています","利用規約に違反している可能性があるため、このアカウントを制限しました。停止中は投稿、申し込み、メッセージ送信ができません。","誤りだと思われる場合は、ニックネームと簡単な説明を添えてメールでご連絡ください：","メールで連絡","ログアウト"],ko:["계정이 정지되었습니다","이용약관을 위반한 것으로 보여 이 계정을 제한했습니다. 정지 기간에는 게시, 신청, 메시지 전송이 불가능합니다.","오류라고 생각하시면 닉네임과 간단한 설명을 적어 이메일로 문의해 주세요:","이메일 문의","로그아웃"]};
@@ -181,15 +181,11 @@ function fbSus(on){var o=document.getElementById("susov");if(!on){if(o)o.remove(
 function visChats(){var o={};Object.keys(chats).forEach(function(k){var c=chats[k];if(!(c.real&&c.puid&&blockU[c.puid]))o[k]=c});return o}
 function visTrips(){return trips.filter(function(t){return !(t.uid&&blockU[t.uid])})}
 function fbLoadBlocks(){if(BLK_OK||!auth||!fbUid||!window.RSFB||!RSFB.blocksLoad)return;BLK_OK=1;RSFB.blocksLoad().then(function(l){l.forEach(function(x){blockU[x[0]]=x[1];if(x[1]&&blocked.indexOf(x[1])<0)blocked.push(x[1])});LS.set("rs_blocku",JSON.stringify(blockU));LS.set("rs_blocked",JSON.stringify(blocked));if(l.length)show(cur,curO)},function(e){BLK_OK=0;console.error(e)})}
-var SNDA=null;function sndMk(){if(SNDA)return SNDA;var r=22050,n=r*.4|0,d=new Uint8Array(44+n*2),v=new DataView(d.buffer);function w(o,s){for(var i=0;i<s.length;i++)d[o+i]=s.charCodeAt(i)}w(0,"RIFF");v.setUint32(4,36+n*2,true);w(8,"WAVEfmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,r,true);v.setUint32(28,r*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,"data");v.setUint32(40,n*2,true);for(var i=0;i<n;i++){var t=i/r,f=t<.16?880:1175,e=t<.16?t:t-.16,a=Math.min(1,e*60)*Math.exp(-e*14);v.setInt16(44+i*2,Math.sin(2*Math.PI*f*t)*a*9000,true)}var s="";for(i=0;i<d.length;i++)s+=String.fromCharCode(d[i]);SNDA=new Audio("data:audio/wav;base64,"+btoa(s));return SNDA}
 var SHA=null;function shMk(){if(SHA)return SHA;var r=8000,n=r*.1|0,d=new Uint8Array(44+n*2),v=new DataView(d.buffer);function w(o,s){for(var i=0;i<s.length;i++)d[o+i]=s.charCodeAt(i)}w(0,"RIFF");v.setUint32(4,36+n*2,true);w(8,"WAVEfmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,r,true);v.setUint32(28,r*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,"data");v.setUint32(40,n*2,true);var s="";for(var i=0;i<d.length;i++)s+=String.fromCharCode(d[i]);SHA=new Audio("data:audio/wav;base64,"+btoa(s));return SHA}
 function snd(a){try{a.muted=false;a.currentTime=0;var p=a.play();if(p&&p.catch)p.catch(function(){try{var h=shMk();h.src=a.src;h.muted=false;h.currentTime=0;h.play().catch(function(){})}catch(e){}})}catch(e){}}
-function beep(){try{if(localStorage.getItem("rs_snd")==="0")return;snd(sndMk())}catch(e){}}
 var CHA=null;function cheerMk(){if(CHA)return CHA;var r=22050,n=r*1.5|0,d=new Uint8Array(44+n*2),v=new DataView(d.buffer);function w(o,s){for(var i=0;i<s.length;i++)d[o+i]=s.charCodeAt(i)}w(0,"RIFF");v.setUint32(4,36+n*2,true);w(8,"WAVEfmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,r,true);v.setUint32(28,r*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,"data");v.setUint32(40,n*2,true);var N=[[523,0],[659,.11],[784,.22],[1047,.33],[1319,.44]],C=[523,659,784,1047];for(var i=0;i<n;i++){var t=i/r,x=0;N.forEach(function(p){var e=t-p[1];if(e>=0)x+=Math.sin(2*Math.PI*p[0]*e)*Math.min(1,e*80)*Math.exp(-e*7)*.5});var e2=t-.6;if(e2>=0)C.forEach(function(f){x+=Math.sin(2*Math.PI*f*t)*Math.min(1,e2*60)*Math.exp(-e2*3)*.22});v.setInt16(44+i*2,Math.max(-1,Math.min(1,x))*11000,true)}var s="";for(i=0;i<d.length;i++)s+=String.fromCharCode(d[i]);CHA=new Audio("data:audio/wav;base64,"+btoa(s));return CHA}
-function cheer(){try{if(Date.now()<QUIET||localStorage.getItem("rs_snd")==="0")return;snd(cheerMk())}catch(e){}}
-["pointerdown","touchend","click"].forEach(function(ev){document.addEventListener(ev,function(){try{[sndMk(),cheerMk()].forEach(function(a){if(!a.__u){a.__u=1;a.muted=true;var p=a.play();if(p&&p.then)p.then(function(){a.pause();a.currentTime=0;a.muted=false}).catch(function(){a.__u=0;a.muted=false})}});var h=shMk();if(!h.__u){h.__u=1;var q=h.play();if(q&&q.catch)q.catch(function(){h.__u=0})}}catch(e){}},{passive:true})});
-var QUIET=Date.now()+20000;
-function ping(){if(Date.now()<QUIET)return;beep()}
+function cheer(){try{if(localStorage.getItem("rs_snd")==="0")return;snd(cheerMk())}catch(e){}}
+["pointerdown","touchend","click"].forEach(function(ev){document.addEventListener(ev,function(){try{[cheerMk()].forEach(function(a){if(!a.__u){a.__u=1;a.muted=true;var p=a.play();if(p&&p.then)p.then(function(){a.pause();a.currentTime=0;a.muted=false}).catch(function(){a.__u=0;a.muted=false})}});var h=shMk();if(!h.__u){h.__u=1;var q=h.play();if(q&&q.catch)q.catch(function(){h.__u=0})}}catch(e){}},{passive:true})});
 function fbMsgSeen(k,l){try{localStorage.setItem("rs_m_"+k,String(l.length))}catch(e){}var c=chats[k];if(c){if(!c.seed)c.seed=c.msgs[0];c.msgs=[c.seed].concat(l);c.unread=0;badge()}}
 function fbMsgSweep(){if(document.hidden||!auth||!fbUid||!window.RSFB||!RSFB.msgLoad)return;var open=(cur==="chat"&&curO&&curO.p)?curO.p.id:"";Object.keys(chats).filter(function(k){var c=chats[k];return c.real&&c.tid&&!c.declined&&!c.left&&k!==open&&!blockU[c.puid||""]}).sort(function(a,b){return (chats[b].at||0)-(chats[a].at||0)}).slice(0,8).forEach(function(k){var c=chats[k],ru=c.ruid||k.split("|")[2];RSFB.msgLoad(c.tid,ru).then(function(l){var seen=0;try{seen=+localStorage.getItem("rs_m_"+k)||0}catch(e){}if(l.length<=seen)return;var nw=l.slice(seen).filter(function(m){return !m[1]});try{localStorage.setItem("rs_m_"+k,String(l.length))}catch(e){}if(!c.seed)c.seed=c.msgs[0];c.msgs=[c.seed].concat(l);if(!nw.length)return;c.unread=1;badge();rsToast(c.peer.n+": "+nw[nw.length-1][0].slice(0,40),6000);var el=document.getElementById("toast");el.onclick=function(){el.className="";go("chat",{p:{id:k}})}},function(){})})}
 setInterval(fbMsgSweep,15000);
@@ -271,7 +267,7 @@ var app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
 /* ===== 第 3a-3：版本更新架構 =====
    APP_VERSION：給人看的版本字串；APP_BUILD：遞增整數（每次發佈 +1），用來和 config/app.minBuild 比較；
    SCHEMA：資料格式版本（users／trips 的 schemaVersion）。日後改欄位時 SCHEMA +1，並在 norm() 補上轉換。 */
-var APP_VERSION="4.0.40",APP_BUILD=370,SCHEMA=1,OLD=false,cfgT=0,cfgNew=0;
+var APP_VERSION="4.0.42",APP_BUILD=372,SCHEMA=1,OLD=false,cfgT=0,cfgNew=0;
 window.RS_VER={v:APP_VERSION,b:APP_BUILD,schema:SCHEMA};
 function stamp(){return {schemaVersion:SCHEMA,appBuild:APP_BUILD,appVersion:APP_VERSION}}
 function guard(){if(OLD)throw fail("oldVer")}
