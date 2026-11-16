@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="rs-version" content="4.0.39 (369)"><title>Route Split v2 · Test build</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="rs-version" content="4.0.40 (370)"><title>Route Split v2 · Test build</title>
 <style>:root{--ink:#201812}html,body{margin:0;height:100%;background:#FF751F;overflow:hidden}
 #app{container-type:inline-size;position:relative;height:100%;max-width:520px;margin:0 auto;background:#FF751F}
 #st,iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -182,10 +182,12 @@ function visChats(){var o={};Object.keys(chats).forEach(function(k){var c=chats[
 function visTrips(){return trips.filter(function(t){return !(t.uid&&blockU[t.uid])})}
 function fbLoadBlocks(){if(BLK_OK||!auth||!fbUid||!window.RSFB||!RSFB.blocksLoad)return;BLK_OK=1;RSFB.blocksLoad().then(function(l){l.forEach(function(x){blockU[x[0]]=x[1];if(x[1]&&blocked.indexOf(x[1])<0)blocked.push(x[1])});LS.set("rs_blocku",JSON.stringify(blockU));LS.set("rs_blocked",JSON.stringify(blocked));if(l.length)show(cur,curO)},function(e){BLK_OK=0;console.error(e)})}
 var SNDA=null;function sndMk(){if(SNDA)return SNDA;var r=22050,n=r*.4|0,d=new Uint8Array(44+n*2),v=new DataView(d.buffer);function w(o,s){for(var i=0;i<s.length;i++)d[o+i]=s.charCodeAt(i)}w(0,"RIFF");v.setUint32(4,36+n*2,true);w(8,"WAVEfmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,r,true);v.setUint32(28,r*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,"data");v.setUint32(40,n*2,true);for(var i=0;i<n;i++){var t=i/r,f=t<.16?880:1175,e=t<.16?t:t-.16,a=Math.min(1,e*60)*Math.exp(-e*14);v.setInt16(44+i*2,Math.sin(2*Math.PI*f*t)*a*9000,true)}var s="";for(i=0;i<d.length;i++)s+=String.fromCharCode(d[i]);SNDA=new Audio("data:audio/wav;base64,"+btoa(s));return SNDA}
-function beep(){try{if(localStorage.getItem("rs_snd")==="0")return;var a=sndMk();a.muted=false;a.currentTime=0;a.play().catch(function(){})}catch(e){}}
+var SHA=null;function shMk(){if(SHA)return SHA;var r=8000,n=r*.1|0,d=new Uint8Array(44+n*2),v=new DataView(d.buffer);function w(o,s){for(var i=0;i<s.length;i++)d[o+i]=s.charCodeAt(i)}w(0,"RIFF");v.setUint32(4,36+n*2,true);w(8,"WAVEfmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,r,true);v.setUint32(28,r*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,"data");v.setUint32(40,n*2,true);var s="";for(var i=0;i<d.length;i++)s+=String.fromCharCode(d[i]);SHA=new Audio("data:audio/wav;base64,"+btoa(s));return SHA}
+function snd(a){try{a.muted=false;a.currentTime=0;var p=a.play();if(p&&p.catch)p.catch(function(){try{var h=shMk();h.src=a.src;h.muted=false;h.currentTime=0;h.play().catch(function(){})}catch(e){}})}catch(e){}}
+function beep(){try{if(localStorage.getItem("rs_snd")==="0")return;snd(sndMk())}catch(e){}}
 var CHA=null;function cheerMk(){if(CHA)return CHA;var r=22050,n=r*1.5|0,d=new Uint8Array(44+n*2),v=new DataView(d.buffer);function w(o,s){for(var i=0;i<s.length;i++)d[o+i]=s.charCodeAt(i)}w(0,"RIFF");v.setUint32(4,36+n*2,true);w(8,"WAVEfmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,r,true);v.setUint32(28,r*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,"data");v.setUint32(40,n*2,true);var N=[[523,0],[659,.11],[784,.22],[1047,.33],[1319,.44]],C=[523,659,784,1047];for(var i=0;i<n;i++){var t=i/r,x=0;N.forEach(function(p){var e=t-p[1];if(e>=0)x+=Math.sin(2*Math.PI*p[0]*e)*Math.min(1,e*80)*Math.exp(-e*7)*.5});var e2=t-.6;if(e2>=0)C.forEach(function(f){x+=Math.sin(2*Math.PI*f*t)*Math.min(1,e2*60)*Math.exp(-e2*3)*.22});v.setInt16(44+i*2,Math.max(-1,Math.min(1,x))*11000,true)}var s="";for(i=0;i<d.length;i++)s+=String.fromCharCode(d[i]);CHA=new Audio("data:audio/wav;base64,"+btoa(s));return CHA}
-function cheer(){try{if(Date.now()<QUIET||localStorage.getItem("rs_snd")==="0")return;var a=cheerMk();a.muted=false;a.currentTime=0;a.play().catch(function(){})}catch(e){}}
-["pointerdown","touchend"].forEach(function(ev){document.addEventListener(ev,function(){try{[sndMk(),cheerMk()].forEach(function(a){if(!a.__u){a.__u=1;a.muted=true;var p=a.play();if(p&&p.then)p.then(function(){a.pause();a.currentTime=0;a.muted=false}).catch(function(){a.__u=0;a.muted=false})}})}catch(e){}},{passive:true})});
+function cheer(){try{if(Date.now()<QUIET||localStorage.getItem("rs_snd")==="0")return;snd(cheerMk())}catch(e){}}
+["pointerdown","touchend","click"].forEach(function(ev){document.addEventListener(ev,function(){try{[sndMk(),cheerMk()].forEach(function(a){if(!a.__u){a.__u=1;a.muted=true;var p=a.play();if(p&&p.then)p.then(function(){a.pause();a.currentTime=0;a.muted=false}).catch(function(){a.__u=0;a.muted=false})}});var h=shMk();if(!h.__u){h.__u=1;var q=h.play();if(q&&q.catch)q.catch(function(){h.__u=0})}}catch(e){}},{passive:true})});
 var QUIET=Date.now()+20000;
 function ping(){if(Date.now()<QUIET)return;beep()}
 function fbMsgSeen(k,l){try{localStorage.setItem("rs_m_"+k,String(l.length))}catch(e){}var c=chats[k];if(c){if(!c.seed)c.seed=c.msgs[0];c.msgs=[c.seed].concat(l);c.unread=0;badge()}}
@@ -193,7 +195,7 @@ function fbMsgSweep(){if(document.hidden||!auth||!fbUid||!window.RSFB||!RSFB.msg
 setInterval(fbMsgSweep,15000);
 function fbPoll(){if(!document.hidden&&auth&&fbUid&&window.RSFB)fbLoadReqs(true)}
 setInterval(fbPoll,40000);
-document.addEventListener("visibilitychange",function(){if(!document.hidden){QUIET=Date.now()+20000;if(auth&&fbUid&&window.RSFB)fbLoadReqs()}});
+document.addEventListener("visibilitychange",function(){if(!document.hidden){if(auth&&fbUid&&window.RSFB)fbLoadReqs()}});
 Object.assign(RSMSG,{
 cntT:{en:"How many are joining?","zh-TW":"共幾位同行？","zh-CN":"共几位同行？",ja:"何名で参加しますか？",ko:"몇 명이 함께하나요?"},
 cntM:{en:"Men","zh-TW":"男性","zh-CN":"男性",ja:"男性",ko:"남성"},
@@ -269,7 +271,7 @@ var app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
 /* ===== 第 3a-3：版本更新架構 =====
    APP_VERSION：給人看的版本字串；APP_BUILD：遞增整數（每次發佈 +1），用來和 config/app.minBuild 比較；
    SCHEMA：資料格式版本（users／trips 的 schemaVersion）。日後改欄位時 SCHEMA +1，並在 norm() 補上轉換。 */
-var APP_VERSION="4.0.39",APP_BUILD=369,SCHEMA=1,OLD=false,cfgT=0,cfgNew=0;
+var APP_VERSION="4.0.40",APP_BUILD=370,SCHEMA=1,OLD=false,cfgT=0,cfgNew=0;
 window.RS_VER={v:APP_VERSION,b:APP_BUILD,schema:SCHEMA};
 function stamp(){return {schemaVersion:SCHEMA,appBuild:APP_BUILD,appVersion:APP_VERSION}}
 function guard(){if(OLD)throw fail("oldVer")}
